@@ -1,4 +1,14 @@
-# 卜上一卦（Draw a Fortune）· DSH 苔藓插件
+# 卜上一卦（Draw a Fortune）· DSH 动态 Cordis 插件
+
+> 界面预览（与运行时界面同款数据与配色 1:1 还原）：
+
+<div align="center">
+
+![收起态：右下角 ☯ 浮钮](docs/fortune-badge.svg)
+
+![占卜结果卡：六爻从下到上、下卦浅黄/上卦浅灰/变爻蓝、本卦变卦汉字标识](docs/fortune-result.svg)
+
+</div>
 
 一个运行在 DeepSeek Harness（DSH）中的悬浮起卦插件：**页面首次加载**与**每次发起任务**时自动起卦；
 随机扔 6 片树叶定六爻，取天机数定动爻（变爻），以本卦/变卦的**五行生克**断吉凶。

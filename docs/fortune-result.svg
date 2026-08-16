@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="304" height="556" viewBox="0 0 304 556" font-family="'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+  <defs>
+    <linearGradient id="cardBg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.97"/>
+      <stop offset="1" stop-color="#fbfbfd" stop-opacity="0.97"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e6c35c"/>
+      <stop offset="1" stop-color="#c79a2e"/>
+    </linearGradient>
+    <linearGradient id="grey" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8fa3b0"/>
+      <stop offset="1" stop-color="#5f7180"/>
+    </linearGradient>
+    <filter id="cardShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="10" stdDeviation="18" flood-color="#1c2230" flood-opacity="0.24"/>
+    </filter>
+  </defs>
+
+  <!-- 卡片主体（304px，圆角16，微3D倾角感） -->
+  <g filter="url(#cardShadow)">
+    <rect x="0" y="0" width="304" height="556" rx="16" fill="url(#cardBg)" stroke="#a8adb6" stroke-opacity="0.35" stroke-width="1"/>
+  </g>
+
+  <!-- 头部 -->
+  <text x="22" y="32" font-size="14" font-weight="700" fill="#23272f" letter-spacing="0.5">卜上一卦</text>
+  <rect x="100" y="17" width="62" height="22" rx="11" fill="#ececf0"/>
+  <text x="131" y="32" text-anchor="middle" font-size="11" fill="#666c76">任务发起</text>
+  <text x="280" y="33" font-size="16" fill="#8a9099" text-anchor="middle">×</text>
+
+  <!-- 叶片托盘（6 片：阳 阳 阴 阳 阴 阴，与下方六爻一一对应） -->
+  <g>
+    <rect x="131" y="48" width="34" height="34" rx="10" fill="url(#gold)"/>
+    <text x="148" y="70" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">阳</text>
+    <rect x="175" y="48" width="34" height="34" rx="10" fill="url(#gold)"/>
+    <text x="192" y="70" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">阳</text>
+    <rect x="219" y="48" width="34" height="34" rx="10" fill="url(#grey)"/>
+    <text x="236" y="70" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">阴</text>
+    <rect x="87" y="48" width="34" height="34" rx="10" fill="url(#gold)"/>
+    <text x="104" y="70" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">阳</text>
+    <rect x="43" y="48" width="34" height="34" rx="10" fill="url(#grey)"/>
+    <text x="60" y="70" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">阴</text>
+    <rect x="263" y="48" width="34" height="34" rx="10" fill="url(#grey)"/>
+    <text x="280" y="70" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">阴</text>
+  </g>
+
+  <!-- 六爻：从下到上（第 1 爻在下、第 6 爻在上）；下卦浅黄、上卦浅灰、变爻蓝 -->
+  <!-- 卦例：lines = [阳,阳,阴,阳,阴,阴]，变爻 = 第 2 爻（下卦中爻，蓝色背景） -->
+  <g>
+    <!-- 第 6 爻（上卦·浅灰）阴 -->
+    <rect x="16" y="108" width="272" height="25" rx="8" fill="#e9e9ee"/>
+    <rect x="30" y="113" width="104" height="15" rx="5" fill="#272c33"/>
+    <rect x="170" y="113" width="104" height="15" rx="5" fill="#272c33"/>
+    <!-- 第 5 爻（上卦·浅灰）阴 -->
+    <rect x="16" y="137" width="272" height="25" rx="8" fill="#e9e9ee"/>
+    <rect x="30" y="142" width="104" height="15" rx="5" fill="#272c33"/>
+    <rect x="170" y="142" width="104" height="15" rx="5" fill="#272c33"/>
+    <!-- 第 4 爻（上卦·浅灰）阳 -->
+    <rect x="16" y="166" width="272" height="25" rx="8" fill="#e9e9ee"/>
+    <rect x="30" y="171" width="244" height="15" rx="5" fill="#272c33"/>
+    <!-- 第 3 爻（下卦·浅黄）阴 -->
+    <rect x="16" y="195" width="272" height="25" rx="8" fill="#fbf0c8"/>
+    <rect x="30" y="200" width="104" height="15" rx="5" fill="#272c33"/>
+    <rect x="170" y="200" width="104" height="15" rx="5" fill="#272c33"/>
+    <!-- 第 2 爻（下卦·变爻 → 蓝色背景）阳 -->
+    <rect x="16" y="224" width="272" height="25" rx="8" fill="#cfe3fc"/>
+    <rect x="30" y="229" width="244" height="15" rx="5" fill="#1e5aa8"/>
+    <!-- 第 1 爻（下卦·浅黄）阳 -->
+    <rect x="16" y="253" width="272" height="25" rx="8" fill="#fbf0c8"/>
+    <rect x="30" y="258" width="244" height="15" rx="5" fill="#272c33"/>
+  </g>
+
+  <!-- 结果区：本卦 兑 金 ⇄ 变卦 震 木（全部汉字标识） -->
+  <g>
+    <rect x="18" y="296" width="128" height="92" rx="12" fill="#fafbfc" stroke="#cdd2d9" stroke-width="1"/>
+    <text x="82" y="316" text-anchor="middle" font-size="12" font-weight="700" fill="#5a606b">本卦</text>
+    <text x="82" y="354" text-anchor="middle" font-size="30" fill="#23272f">兑</text>
+    <rect x="65" y="364" width="34" height="16" rx="8" fill="#78909c"/>
+    <text x="82" y="376" text-anchor="middle" font-size="11" font-weight="600" fill="#ffffff">金</text>
+
+    <text x="152" y="344" text-anchor="middle" font-size="20" fill="#9aa1a8">⇄</text>
+
+    <rect x="158" y="296" width="128" height="92" rx="12" fill="#fafbfc" stroke="#cdd2d9" stroke-width="1"/>
+    <text x="222" y="316" text-anchor="middle" font-size="12" font-weight="700" fill="#5a606b">变卦</text>
+    <text x="222" y="354" text-anchor="middle" font-size="30" fill="#23272f">震</text>
+    <rect x="205" y="364" width="34" height="16" rx="8" fill="#43a047"/>
+    <text x="222" y="376" text-anchor="middle" font-size="11" font-weight="600" fill="#ffffff">木</text>
+  </g>
+
+  <!-- 五行关系行 -->
+  <text x="152" y="408" text-anchor="middle" font-size="11" fill="#666c76">五行开始克结果，中平之兆</text>
+
+  <!-- 判词区（中平·neutral 语义配色） -->
+  <rect x="16" y="420" width="272" height="66" rx="12" fill="#f2f2f4" stroke="#d8d8dd" stroke-width="1"/>
+  <text x="152" y="444" text-anchor="middle" font-size="20" font-weight="800" letter-spacing="2" fill="#3f434a">中平</text>
+  <text x="152" y="462" text-anchor="middle" font-size="12" fill="#666c76">成事率 40%–60% · 事可成</text>
+  <text x="152" y="478" text-anchor="middle" font-size="12" font-style="italic" fill="#33373d">势均相克，事可成而需加力。</text>
+
+  <!-- 动爻说明（无 mod 6） -->
+  <text x="152" y="506" text-anchor="middle" font-size="11" fill="#8a9099">第2爻(动下卦) · 天机数 999666</text>
+
+  <!-- 再占一卦 -->
+  <rect x="112" y="518" width="80" height="26" rx="13" fill="#ffffff" stroke="#b8bdc5" stroke-width="1"/>
+  <text x="152" y="536" text-anchor="middle" font-size="12" fill="#23272f">再占一卦</text>
+</svg>
