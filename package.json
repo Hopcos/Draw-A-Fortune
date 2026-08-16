@@ -1,0 +1,22 @@
+{
+  "name": "bushang-yigua",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "卜上一卦（Draw a Fortune）—— DSH 池坊插件：掷叶起卦、动爻变卦、五行生克断吉凶。",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test test/",
+    "test:core": "node --test test/elements.test.js test/trigrams.test.js test/hexagram.test.js test/fortune.test.js",
+    "test:engine": "node --test test/divine-engine.test.js test/batch-engine.test.js",
+    "test:ui": "node --test test/ui-state.test.js test/generated-code.test.js",
+    "demo": "node src/demo/cli.js",
+    "build": "node src/plugin/bundle.js",
+    "check": "node --check src/plugin/bundle.js && npm run build && node --test test/generated-code.test.js"
+  },
+  "dependencies": {
+    "react": ">=18"
+  }
+}
