@@ -15,7 +15,7 @@ import { INITIAL_STATE, reduce } from '../src/ui/state.js'
 import { elementZh } from '../src/core/elements.js'
 
 test('手动模式：无 useSessions 时渲染徽章浮钮', () => {
-  const element = React.createElement(FortuneWidget, { ctx: {}, overlayProps: {} })
+  const element = React.createElement(FortuneWidget, { runtime: {} })
   const html = renderToString(element)
   assert.ok(html.includes('byg-badge'), '应渲染 byg-badge')
   assert.ok(html.includes('☯'), '应渲染卦符图标')
@@ -26,8 +26,8 @@ test('自动模式：订阅会话快照并渲染徽章', () => {
   const useSessions = (selector) =>
     selector({ current: 's1', byId: { s1: { running: false } } })
   const element = React.createElement(FortuneWidget, {
-    ctx: {},
-    overlayProps: { useSessions },
+    runtime: {},
+    useSessions,
   })
   const html = renderToString(element)
   assert.ok(html.includes('byg-badge'))
@@ -36,8 +36,8 @@ test('自动模式：订阅会话快照并渲染徽章', () => {
 test('自动模式：任务运行中的快照同样能渲染（起卦只发生在 effect 中）', () => {
   const useSessions = (selector) => selector({ current: 's1', byId: { s1: { running: true } } })
   const element = React.createElement(FortuneWidget, {
-    ctx: {},
-    overlayProps: { useSessions },
+    runtime: {},
+    useSessions,
   })
   const html = renderToString(element)
   assert.ok(html.includes('byg-badge'))

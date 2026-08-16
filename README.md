@@ -1,4 +1,4 @@
-# 卜上一卦（Draw a Fortune）· DSH 动态 Cordis 插件
+# 卜上一卦（Draw a Fortune）· DSH 静态模块插件
 
 一个运行在 DeepSeek Harness（DSH）中的悬浮起卦插件：**页面首次加载**与**每次发起任务**时自动起卦；
 随机扔 6 片树叶定六爻，取天机数定动爻（变爻），以本卦/变卦的**五行生克**断吉凶。
@@ -76,8 +76,11 @@ dsh_test/
 │  └─ demo/
 │     └─ cli.js                #   演示：单卦详示 + 4000 卦/4 线程批算统计
 ├─ dist/plugin/
-│  ├─ host.code.js             #   ★ 打包产物：自包含 Host 函数体（供 cordis_define）
-│  └─ client.code.js           #   ★ 打包产物：自包含 Client 函数体（供 cordis_define）
+│  ├─ package.json             #   ★ 静态模块清单：dsh.client 声明 + exports["./client"]
+│  ├─ index.js                 #   ★ Node 半体：空 apply（让插件出现在 host Loader）
+│  ├─ client.js                #   ★ 浏览器半体：__ModuleLoader__ 自包含组件（本地起卦引擎）
+│  ├─ host.code.js             #   （旧·动态）自包含 Host 函数体（供 cordis_define）
+│  └─ client.code.js           #   （旧·动态）自包含 Client 函数体（供 cordis_define）
 └─ test/                       # node:test 全套测试（44 项）
    ├─ elements.test.js         #   五行关系完备性/闭环
    ├─ trigrams.test.js         #   八卦表/互补对/模式全覆盖
@@ -103,7 +106,7 @@ dsh_test/
 | 仓储（Repository） | `records` 有界 FIFO + `divine/list/remove/clear`，为「写入/删除数据」预留扩展点 |
 | 门面（Facade） | `createDivineEngine` 对外统一异步 API；`castHexagram` 纯函数门面 |
 | 还原论 / 纯函数 | 所有判定无副作用，JSON 安全，可在任意线程/进程复制执行 |
-| 异步编程 | 引擎 `await Promise.resolve()` 让出事件循环；批算 `Promise.all`；界面时序用 `ctx.timeout` |
+| 异步编程 | 引擎 `await Promise.resolve()` 让出事件循环；批算 `Promise.all`；界面时序用原生 `setTimeout` |
 | 多线程编程 | `worker_threads` 分片并行（演示与测试覆盖）；核心纯函数天然线程安全 |
 | 代码可读性 | JSDoc 中文注释、单一职责、命名一致、每模块自顶向下可读 |
 
@@ -125,12 +128,30 @@ npm run build   # 重新生成 dist/plugin/*.code.js
 npm run check   # 语法检查 + 重建 + 生成代码执行验证
 ```
 
-### 在 DSH 中激活插件
+### 在 DSH 中安装插件（静态模块）
 
-1. 把 `dist/plugin/*.code.js` 的内容分别作为 `code.host` / `code.client` 交给
-   `cordis_define`（或让代理从该目录读取后定义）；也可以直接运行：
-   `npm run build` 后，将两个产物作为插件代码导入。
-2. `cordis_run` 激活。客户端授权后，右下角出现 ☯ 浮钮：
+插件以**静态 DSH 模块**形式安装，随 profile 启动自动加载，无需运行时 `cordis_define`。
+`dist/plugin/` 下已就绪三个静态模块文件：`package.json`（模块清单）、`index.js`（Node 半体）、
+`client.js`（浏览器半体，内联本地起卦引擎与 UI 组件）。
+
+1. 安装插件到 web profile（`dsh plugin` 转发到 pnpm，把 `dist/plugin` 链接为 profile 依赖）：
+   ```powershell
+   dsh plugin --profile web add .\dist\plugin
+   ```
+
+2. 在 profile 补丁层注册插件（`$DSH_HOME/profiles/web/cordis.patch.yml`）：
+   ```yaml
+   - insert:
+       - id: bushang-yigua
+         name: 'bushang-yigua'
+   ```
+
+3. 重启 web profile（静态模块在启动时扫描加载）：
+   ```powershell
+   dsh web
+   ```
+
+4. 重启后右下角出现 ☯ 浮钮：
    - 页面加载自动起卦；
    - 每次发起任务（发送消息）自动起卦；
    - 点击浮钮手动起卦；点 × 收起。

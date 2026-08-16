@@ -6,7 +6,7 @@
  *  - 每次发起任务（当前会话 running 由 false → true 的上升沿）→ 自动起卦（'task-start'）；
  *  - 点击浮钮手动起卦（'manual'）。
  *
- * 动画：叶片逐片 3D 翻转揭晓（ctx.timeout 驱动 + 轻 3D CSS），
+ * 动画：叶片逐片 3D 翻转揭晓（runtime.delay 驱动 + 轻 3D CSS），
  * 变爻高亮，最后展示 本卦→变卦 与 五行生克吉凶。
  * 竞态防护：generation + mounted 双重校验，丢弃过期动画序列。
  */
@@ -25,10 +25,13 @@ const CHANGING_PAUSE_MS = 560
 
 /**
  * 起卦控制器（自定义 Hook）：状态机 + 异步动画序列。
- * @param ctx - 客户端插件上下文（注入 timer 后含 ctx.timeout）
- * @param getSessionId - 可选：取当前会话 id
+ * 运行时依赖（delay / divine）由调用方通过 runtime 注入，使同一份源码同时支持：
+ *  - 动态插件：delay=ctx.timeout，divine=转发到宿主 RPC
+ *  - 静态模块：delay=setTimeout，divine=本地 castHexagram
+ * @param runtime - { delay(ms): Promise, divine(reason, sessionId): Promise<record> }
+ * @param getSessionId - 可选：取当前会话 id（动态插件用于归档记录）
  */
-function useCastController(ctx, getSessionId) {
+function useCastController(runtime, getSessionId) {
   const [state, dispatch] = React.useReducer(reduce, INITIAL_STATE)
   const generation = React.useRef(0)
   const mounted = React.useRef(true)
@@ -41,26 +44,24 @@ function useCastController(ctx, getSessionId) {
     const gen = ++generation.current
     dispatch({ type: 'trigger', reason })
     try {
-      await ctx.timeout(START_DELAY_MS)
+      await runtime.delay(START_DELAY_MS)
       if (gen !== generation.current || !mounted.current) return
 
-      const args = { reason }
       const sessionId = typeof getSessionId === 'function' ? getSessionId() : undefined
-      if (sessionId !== undefined) args.sessionId = sessionId
-      const record = await host.call('divine', args)
+      const record = await runtime.divine(reason, sessionId)
       if (gen !== generation.current || !mounted.current) return
 
       for (let i = 0; i < 6; i += 1) {
-        await ctx.timeout(LEAF_STEP_MS + (i === 2 || i === 5 ? GROUP_PAUSE_MS : 0))
+        await runtime.delay(LEAF_STEP_MS + (i === 2 || i === 5 ? GROUP_PAUSE_MS : 0))
         if (gen !== generation.current || !mounted.current) return
         dispatch({ type: 'reveal', index: i })
       }
 
-      await ctx.timeout(CHANGING_PAUSE_MS)
+      await runtime.delay(CHANGING_PAUSE_MS)
       if (gen !== generation.current || !mounted.current) return
       dispatch({ type: 'changing' })
 
-      await ctx.timeout(420)
+      await runtime.delay(420)
       if (gen !== generation.current || !mounted.current) return
       dispatch({ type: 'settle', result: record })
       // 结果保持完整显示，不自动收起；由用户点击 × 收起，或由新的起卦替换。
@@ -68,7 +69,7 @@ function useCastController(ctx, getSessionId) {
       if (!mounted.current || gen !== generation.current) return
       dispatch({ type: 'fail', message: String((error && error.message) || error) })
     }
-  }, [ctx, getSessionId])
+  }, [runtime, getSessionId])
 
   const collapse = React.useCallback(() => {
     generation.current += 1 // 使进行中的旧序列失效
@@ -78,10 +79,9 @@ function useCastController(ctx, getSessionId) {
   return { state, cast, collapse }
 }
 
-/** 入口组件：按 useSessions 是否可用选择触发模式。 */
+/** 入口组件：按 useSessions 是否可用选择触发模式（运行时经 props.runtime 注入）。 */
 export function FortuneWidget(props) {
-  const overlayProps = props.overlayProps ?? {}
-  if (typeof overlayProps.useSessions === 'function') {
+  if (typeof props.useSessions === 'function') {
     return React.createElement(FortuneAuto, props)
   }
   return React.createElement(FortuneManual, props)
@@ -89,7 +89,7 @@ export function FortuneWidget(props) {
 
 /** 自动触发模式：订阅会话列表，检测任务发起上升沿 + 首次加载。 */
 function FortuneAuto(props) {
-  const useSessions = props.overlayProps.useSessions
+  const useSessions = props.useSessions
   const snap = useSessions(
     (sessions) => {
       if (sessions.current === undefined) return null
@@ -99,7 +99,7 @@ function FortuneAuto(props) {
     (a, b) => (a === null || b === null ? a === b : a.id === b.id && a.running === b.running),
   )
   const running = snap !== null && snap.running
-  const controller = useCastController(props.ctx, () => (snap ? snap.id : undefined))
+  const controller = useCastController(props.runtime, () => (snap ? snap.id : undefined))
   const prevRunning = React.useRef(null)
 
   React.useEffect(() => {
@@ -123,7 +123,7 @@ function FortuneAuto(props) {
 
 /** 手动模式：仅首次加载起卦，平时可点击浮钮手动起卦。 */
 function FortuneManual(props) {
-  const controller = useCastController(props.ctx)
+  const controller = useCastController(props.runtime)
   React.useEffect(() => {
     controller.cast('page-load')
   }, []) // eslint-disable-line react-hooks/exhaustive-deps

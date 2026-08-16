@@ -8,7 +8,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { buildHostCode, buildClientCode } from '../src/plugin/bundle.js'
+import { buildHostCode, buildClientCode, buildStaticClientCode } from '../src/plugin/bundle.js'
 
 /** 宿主闭包参数表（与 dsh-cordis-host-runner 的沙箱一致）。 */
 const HOST_PARAMS = ['ctx', 'harness', 'console', 'btoa', 'atob', 'TextEncoder', 'TextDecoder']
@@ -154,8 +154,7 @@ test('client 代码可解析：注入样式 + 注册 shell.overlay 槽位', () =
   // （组件内部的徽章分支由真实 React 的 SSR 冒烟测试覆盖）
   const element = registered.render({ useSessions: undefined })
   assert.equal(typeof element.type, 'function', '顶层应为组件类型')
-  assert.ok(element.props.overlayProps !== undefined)
-  assert.ok(element.props.ctx !== undefined)
+  assert.ok(element.props.runtime !== undefined, '渲染应注入 runtime')
 })
 
 test('client 代码中禁用的浏览器全局不可用（setTimeout 等已陷阱化）', () => {
@@ -164,4 +163,50 @@ test('client 代码中禁用的浏览器全局不可用（setTimeout 等已陷�
   for (const banned of ['setTimeout(', 'setInterval(', 'fetch(', 'window.', 'document.']) {
     assert.ok(!code.includes(banned), `生成代码不应引用 ${banned}`)
   }
+})
+
+test('static client 代码：注册 __ModuleLoader__ 模块，工厂返回静态插件', () => {
+  const code = buildStaticClientCode()
+  // 静态 client 是完整脚本，而非动态插件的函数体
+  assert.ok(code.startsWith('window.__ModuleLoader__.load({'), '静态 client 应为脚本格式')
+  assert.ok(!code.includes('host.call'), '静态 client 不应使用 host.call RPC')
+  assert.ok(!code.includes('styles.insert'), '静态 client 不应使用动态 styles.insert')
+
+  // 用假的 window/document 执行脚本，捕获 __ModuleLoader__.load 注册
+  let handoff = null
+  const win = { __ModuleLoader__: { load(h) { handoff = h } } }
+  const doc = {
+    querySelector() { return null },
+    createElement() { return { dataset: {}, textContent: '' } },
+    head: { appendChild() {} },
+  }
+  new Function('window', 'document', 'setTimeout', code)(win, doc, () => {})
+  assert.ok(handoff, '应注册 __ModuleLoader__.load')
+  assert.equal(handoff.id, 'bushang-yigua')
+
+  // 调用工厂（require 仅需提供 react），验证返回的插件导出
+  const React = { createElement: (type, props, ...children) => ({ type, props, children }) }
+  const plugin = handoff.factory((spec) => {
+    if (spec === 'react') return React
+    throw new Error('unexpected require: ' + spec)
+  })
+  assert.ok(plugin && typeof plugin.apply === 'function', '工厂应返回含 apply 的插件')
+  assert.deepEqual(plugin.inject, ['slots'], '静态 client 依赖 slots 服务')
+
+  // apply 应注册 shell.overlay 槽位
+  const registers = []
+  const slots = {
+    inject(key, callback) { registers.push({ key, callback }); return () => {} },
+    register(options, render) { return { options, render } },
+  }
+  plugin.apply({ slots })
+  assert.equal(registers.length, 1)
+  assert.equal(registers[0].key, 'shell.overlay')
+  const registered = registers[0].callback()
+  assert.equal(registered.options.id, 'bushang-yigua')
+
+  // render 应把 runtime 注入组件 props
+  const element = registered.render({ useSessions: undefined })
+  assert.equal(typeof element.type, 'function')
+  assert.ok(element.props.runtime !== undefined)
 })
