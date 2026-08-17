@@ -1,3 +1,8 @@
+<div align="center">
+   <img src="docs/fortune-result.svg" alt="占卜结果卡：六爻从下到上、下卦浅黄/上卦浅灰/变爻蓝、本卦变卦汉字标识" width="45%" />
+  <img src="docs/fortune-badge.svg" alt="收起态：右下角 ☯ 浮钮" width="45%" />
+</div>
+
 # 卜上一卦（Draw a Fortune）. DeepSeek Harness
 
 一个运行在 DeepSeek Harness（DSH）中的悬浮起卦插件：**页面首次加载**与**每次发起任务**时自动起卦；以本卦/变卦的**五行生克**断吉凶。
@@ -7,11 +12,6 @@
 - 可拔插扩展：随机源（Strategy）、记录仓库（Repository）、数据删除/查询扩展点已就位。
 
 ---
-
-<div align="center">
-  <img src="docs/fortune-badge.svg" alt="收起态：右下角 ☯ 浮钮" width="45%" />
-  <img src="docs/fortune-result.svg" alt="占卜结果卡：六爻从下到上、下卦浅黄/上卦浅灰/变爻蓝、本卦变卦汉字标识" width="45%" />
-</div>
 
 ### 吉凶表（与需求一致）
 
