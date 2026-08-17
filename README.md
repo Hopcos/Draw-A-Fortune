@@ -71,12 +71,13 @@ dsh_test/
 │  │  ├─ state.js              #   界面状态机（纯 reducer：掷叶进度/结果/收起）
 │  │  └─ widget.js             #   React 悬浮部件（仅 createElement，自动/手动触发）
 │  ├─ plugin/
-│  │  └─ bundle.js             #   打包器：模块化源码 → 自包含插件代码（host/client 骨架内嵌于此，
-│  │                           #   单一事实来源：产物见 dist/plugin/*.code.js）
+│  │  └─ bundle.js             #   打包器：模块化源码 → 静态模块 + 动态插件产物（host/client 骨架内嵌于此，
+│  │                           #   单一事实来源：产物见 dist/plugin/*）
 │  └─ demo/
 │     └─ cli.js                #   演示：单卦详示 + 4000 卦/4 线程批算统计
 ├─ dist/plugin/
-│  ├─ package.json             #   ★ 静态模块清单：dsh.client 声明 + exports["./client"]
+│  ├─ package.json             #   ★ 静态模块清单：dsh.bundle 声明 + dsh.client 声明 + exports
+│  ├─ cordis.patch.yml         #   ★ profile 补丁层：向宿主 Loader 插入插件条目
 │  ├─ index.js                 #   ★ Node 半体：空 apply（让插件出现在 host Loader）
 │  ├─ client.js                #   ★ 浏览器半体：__ModuleLoader__ 自包含组件（本地起卦引擎）
 │  ├─ host.code.js             #   （旧·动态）自包含 Host 函数体（供 cordis_define）
@@ -131,27 +132,22 @@ npm run check   # 语法检查 + 重建 + 生成代码执行验证
 ### 在 DSH 中安装插件（静态模块）
 
 插件以**静态 DSH 模块**形式安装，随 profile 启动自动加载，无需运行时 `cordis_define`。
-`dist/plugin/` 下已就绪三个静态模块文件：`package.json`（模块清单）、`index.js`（Node 半体）、
-`client.js`（浏览器半体，内联本地起卦引擎与 UI 组件）。
+`dist/plugin/` 下已就绪静态模块文件：`package.json`（模块清单，含 `dsh.bundle` 声明）、
+`index.js`（Node 半体）、`client.js`（浏览器半体，内联本地起卦引擎与 UI 组件）、
+`cordis.patch.yml`（profile 补丁层，向宿主 Loader 插入插件条目）。
 
-1. 安装插件到 web profile（`dsh plugin` 转发到 pnpm，把 `dist/plugin` 链接为 profile 依赖）：
+1. 安装插件到 web profile（`dsh plugin` 转发到 pnpm；`dsh.bundle` 声明会让插件自动加入
+   `dsh.profile.bundles`，**无需手动编辑 profile 的 `cordis.patch.yml`**）：
    ```powershell
    dsh plugin --profile web add .\dist\plugin
    ```
 
-2. 在 profile 补丁层注册插件（`$DSH_HOME/profiles/web/cordis.patch.yml`）：
-   ```yaml
-   - insert:
-       - id: bushang-yigua
-         name: 'bushang-yigua'
-   ```
-
-3. 重启 web profile（静态模块在启动时扫描加载）：
+2. 重启 web profile（静态模块在启动时扫描加载）：
    ```powershell
    dsh web
    ```
 
-4. 重启后右下角出现 ☯ 浮钮：
+3. 重启后右下角出现 ☯ 浮钮：
    - 页面加载自动起卦；
    - 每次发起任务（发送消息）自动起卦；
    - 点击浮钮手动起卦；点 × 收起。

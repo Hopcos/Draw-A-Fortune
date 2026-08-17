@@ -8,7 +8,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { buildHostCode, buildClientCode, buildStaticClientCode } from '../src/plugin/bundle.js'
+import { buildHostCode, buildClientCode, buildStaticClientCode, buildPackageJson, buildCordisPatch } from '../src/plugin/bundle.js'
 
 /** 宿主闭包参数表（与 dsh-cordis-host-runner 的沙箱一致）。 */
 const HOST_PARAMS = ['ctx', 'harness', 'console', 'btoa', 'atob', 'TextEncoder', 'TextDecoder']
@@ -209,4 +209,18 @@ test('static client 代码：注册 __ModuleLoader__ 模块，工厂返回静态
   const element = registered.render({ useSessions: undefined })
   assert.equal(typeof element.type, 'function')
   assert.ok(element.props.runtime !== undefined)
+})
+
+test('静态模块清单与补丁层：声明 dsh.bundle 与 dsh.client，含插入条目', () => {
+  const manifest = JSON.parse(buildPackageJson())
+  assert.equal(manifest.name, 'bushang-yigua')
+  assert.equal(manifest.dsh.bundle.patch, './cordis.patch.yml', '应声明 dsh.bundle.patch')
+  assert.equal(manifest.dsh.client.platform, 'web', '应声明 dsh.client.platform')
+  assert.equal(manifest.exports['./client'], './client.js')
+  assert.equal(manifest.exports['./package.json'], './package.json')
+  assert.equal(manifest.exports['./cordis.patch.yml'], './cordis.patch.yml')
+
+  const patch = buildCordisPatch()
+  assert.ok(patch.includes('- insert:'), '补丁层应包含 insert')
+  assert.ok(patch.includes("name: 'bushang-yigua'"), '补丁层应插入 bushang-yigua 条目')
 })

@@ -251,8 +251,12 @@ export function buildPackageJson() {
       '.': './index.js',
       './client': './client.js',
       './package.json': './package.json',
+      './cordis.patch.yml': './cordis.patch.yml',
     },
     dsh: {
+      bundle: {
+        patch: './cordis.patch.yml',
+      },
       client: {
         platform: 'web',
       },
@@ -263,6 +267,17 @@ export function buildPackageJson() {
   }, null, 2) + '\n'
 }
 
+/** 生成插件的 profile 补丁层（cordis.patch.yml）：向宿主 Loader 插入本插件条目。 */
+export function buildCordisPatch() {
+  return `# 卜上一卦（bushang-yigua）profile 补丁层：向宿主 Loader 插入本插件条目。
+# 由 package.json 的 dsh.bundle.patch 声明；dsh plugin add 检测到 dsh.bundle 后，
+# 会自动把本包加入 dsh.profile.bundles（无需手动编辑 profile 的 cordis.patch.yml）。
+- insert:
+    - id: bushang-yigua
+      name: 'bushang-yigua'
+`
+}
+
 /** 主流程：生成并写出 dist/plugin/ 全部产物。 */
 export function main() {
   mkdirSync(dist, { recursive: true })
@@ -271,17 +286,20 @@ export function main() {
   const staticClientCode = buildStaticClientCode()
   const indexCode = buildIndexCode()
   const packageJson = buildPackageJson()
+  const cordisPatch = buildCordisPatch()
   writeFileSync(join(dist, 'host.code.js'), hostCode, 'utf8')
   writeFileSync(join(dist, 'client.code.js'), clientCode, 'utf8')
   writeFileSync(join(dist, 'client.js'), staticClientCode, 'utf8')
   writeFileSync(join(dist, 'index.js'), indexCode, 'utf8')
   writeFileSync(join(dist, 'package.json'), packageJson, 'utf8')
+  writeFileSync(join(dist, 'cordis.patch.yml'), cordisPatch, 'utf8')
   console.log(`[bundle] wrote dist/plugin/package.json (${packageJson.length} chars)`)
+  console.log(`[bundle] wrote dist/plugin/cordis.patch.yml (${cordisPatch.length} chars)`)
   console.log(`[bundle] wrote dist/plugin/index.js (${indexCode.length} chars)`)
   console.log(`[bundle] wrote dist/plugin/client.js (${staticClientCode.length} chars)`)
   console.log(`[bundle] wrote dist/plugin/host.code.js (${hostCode.length} chars)`)
   console.log(`[bundle] wrote dist/plugin/client.code.js (${clientCode.length} chars)`)
-  return { hostCode, clientCode, staticClientCode, indexCode, packageJson }
+  return { hostCode, clientCode, staticClientCode, indexCode, packageJson, cordisPatch }
 }
 
 // 直接执行时运行主流程
