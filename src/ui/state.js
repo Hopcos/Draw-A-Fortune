@@ -58,6 +58,10 @@ export function reduce(state, action) {
     case 'collapse': {
       return { ...state, phase: 'badge' }
     }
+    case 'restore': {
+      // 折叠后重新展开：还原上次结果（若无结果则保持原样，由调用方 guard）
+      return state.result !== null ? { ...state, phase: 'result', error: null } : state
+    }
     case 'dismiss': {
       return { ...state, error: null }
     }

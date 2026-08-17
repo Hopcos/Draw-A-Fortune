@@ -54,6 +54,24 @@ test('settle / fail / collapse / dismiss 状态转换', () => {
   assert.equal(state.error, null)
 })
 
+test('restore：折叠后还原上次结果；无结果时保持原样', () => {
+  // 有结果时：collapse → restore 回到 result 且保留结果
+  let state = reduce(INITIAL_STATE, { type: 'trigger' })
+  state = reduce(state, { type: 'settle', result: { id: 'cast-7' } })
+  state = reduce(state, { type: 'collapse' })
+  assert.equal(state.phase, 'badge')
+  assert.equal(state.result.id, 'cast-7')
+
+  state = reduce(state, { type: 'restore' })
+  assert.equal(state.phase, 'result')
+  assert.equal(state.result.id, 'cast-7')
+
+  // 无结果时：restore 不改变 phase（仍为 badge）
+  const badge = reduce(INITIAL_STATE, { type: 'restore' })
+  assert.equal(badge.phase, 'badge')
+  assert.equal(badge.result, null)
+})
+
 test('未知 action 原样返回', () => {
   assert.equal(reduce(INITIAL_STATE, { type: 'nope' }), INITIAL_STATE)
 })

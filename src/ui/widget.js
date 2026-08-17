@@ -2,9 +2,9 @@
  * 卜上一卦 悬浮部件（React 组件，仅使用 createElement，无 JSX）。
  *
  * 触发：
- *  - 页面首次加载（组件挂载）→ 自动起一卦（reason: 'page-load'）；
- *  - 每次发起任务（当前会话 running 由 false → true 的上升沿）→ 自动起卦（'task-start'）；
- *  - 点击浮钮手动起卦（'manual'）。
+ *  - 仅首次加载自动起一卦（reason: 'page-load' 或 'task-start'）；
+ *  - 之后不再自动触发；点击浮钮还原上次结果（无结果则起卦）；
+ *  - 结果卡内「再占一卦」按钮手动起卦（'manual'）。
  *
  * 动画：叶片逐片 3D 翻转揭晓（runtime.delay 驱动 + 轻 3D CSS），
  * 变爻高亮，最后展示 本卦→变卦 与 五行生克吉凶。
@@ -76,7 +76,16 @@ function useCastController(runtime, getSessionId) {
     dispatch({ type: 'collapse' })
   }, [])
 
-  return { state, cast, collapse }
+  const open = React.useCallback(() => {
+    // 徽章点击：有上次结果则还原，否则首次起卦
+    if (state.result !== null) {
+      dispatch({ type: 'restore' })
+    } else {
+      cast('manual')
+    }
+  }, [state.result, cast])
+
+  return { state, cast, open, collapse }
 }
 
 /** 入口组件：按 useSessions 是否可用选择触发模式（运行时经 props.runtime 注入）。 */
@@ -87,7 +96,7 @@ export function FortuneWidget(props) {
   return React.createElement(FortuneManual, props)
 }
 
-/** 自动触发模式：订阅会话列表，检测任务发起上升沿 + 首次加载。 */
+/** 自动触发模式：仅首次加载自动起卦一次（之后不再自动触发）。 */
 function FortuneAuto(props) {
   const useSessions = props.useSessions
   const snap = useSessions(
@@ -106,22 +115,21 @@ function FortuneAuto(props) {
     const last = prevRunning.current
     prevRunning.current = running
     if (last === null) {
-      // 首次加载：若任务已在运行则按任务发起起卦，否则按页面加载起卦
+      // 仅首次加载自动起卦一次（任务已在运行则按任务发起，否则按页面加载）；
+      // 之后不再自动触发（移除 task-start 上升沿）
       controller.cast(running ? 'task-start' : 'page-load')
-    } else if (running && !last) {
-      // 每个新任务的上升沿
-      controller.cast('task-start')
     }
   }, [running]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return React.createElement(FortuneView, {
     state: controller.state,
+    onOpen: controller.open,
     onManual: () => controller.cast('manual'),
     onClose: controller.collapse,
   })
 }
 
-/** 手动模式：仅首次加载起卦，平时可点击浮钮手动起卦。 */
+/** 手动模式：仅首次加载起卦一次，点击浮钮还原上次结果（无结果则起卦）。 */
 function FortuneManual(props) {
   const controller = useCastController(props.runtime)
   React.useEffect(() => {
@@ -129,13 +137,14 @@ function FortuneManual(props) {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
   return React.createElement(FortuneView, {
     state: controller.state,
+    onOpen: controller.open,
     onManual: () => controller.cast('manual'),
     onClose: controller.collapse,
   })
 }
 
 /** 呈现组件（纯函数，导出以便测试/演示直接渲染）。 */
-export function FortuneView({ state, onManual, onClose }) {
+export function FortuneView({ state, onOpen, onManual, onClose }) {
   if (state.phase === 'badge') {
     return React.createElement(
       'div',
@@ -147,7 +156,7 @@ export function FortuneView({ state, onManual, onClose }) {
           type: 'button',
           title: '卜上一卦',
           'aria-label': '卜上一卦',
-          onClick: onManual,
+          onClick: onOpen,
         },
         React.createElement('span', { className: 'byg-badge-icon' }, '☯'),
       ),
