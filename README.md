@@ -1,4 +1,4 @@
-# 卜上一卦（Draw a Fortune）
+# 卜上一卦（Draw a Fortune）. DeepSeek Harness
 
 一个运行在 DeepSeek Harness（DSH）中的悬浮起卦插件：**页面首次加载**与**每次发起任务**时自动起卦；以本卦/变卦的**五行生克**断吉凶。
 
