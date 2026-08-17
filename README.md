@@ -8,14 +8,9 @@
 
 ---
 
-> 界面预览（与运行时界面同款数据与配色 1:1 还原）：
-
 <div align="center">
-
-![收起态：右下角 ☯ 浮钮](docs/fortune-badge.svg)
-
-![占卜结果卡：六爻从下到上、下卦浅黄/上卦浅灰/变爻蓝、本卦变卦汉字标识](docs/fortune-result.svg)
-
+  <img src="docs/fortune-badge.svg" alt="收起态：右下角 ☯ 浮钮" width="45%" />
+  <img src="docs/fortune-result.svg" alt="占卜结果卡：六爻从下到上、下卦浅黄/上卦浅灰/变爻蓝、本卦变卦汉字标识" width="45%" />
 </div>
 
 ### 吉凶表（与需求一致）
