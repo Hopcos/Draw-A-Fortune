@@ -1,6 +1,5 @@
 <div align="center">
-   <img src="docs/fortune-result.svg" alt="占卜结果卡：六爻从下到上、下卦浅黄/上卦浅灰/变爻蓝、本卦变卦汉字标识" width="45%" />
-  <img src="docs/fortune-badge.svg" alt="收起态：右下角 ☯ 浮钮" width="45%" />
+   <img src="docs/divination.png" alt="占卜结果卡：六爻从下到上、下卦浅黄/上卦浅灰/变爻蓝、本卦变卦汉字标识"/>
 </div>
 
 # 卜上一卦（Draw a Fortune）. DeepSeek Harness
